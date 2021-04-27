@@ -1,0 +1,21 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: {{ .Release.Name }}-route
+spec:
+  entryPoints:
+    - jitsi-websecure
+  routes:
+    - kind: Rule
+      match: "HostRegexp(`{host:virtual-office.+}`) && (PathPrefix(`/`))"
+      priority: 100
+      services:
+        - kind: Service
+          name: {{ include "jitsi-meet.name" . }}-web
+          namespace: {{ .Release.Namespace }}
+          passHostHeader: true
+          port: {{ .Values.web.port |default "80" }}
+  tls:
+    secretName: {{ include "jitsi-meet.name" . }}-cert
+    domains:
+      - main: {{.Values.certificate.host}}

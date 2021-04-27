@@ -1,0 +1,106 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "jitsi-meet.name" . }}-prosody
+  labels:
+{{ include "jitsi-meet.labels" . | indent 4 }}
+spec:
+  serviceName: {{ include "jitsi-meet.name" . }}-prosody
+  {{- if .Values.prosody.replicas }}
+  replicas: {{ .Values.prosody.replicas }}
+  {{- end }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "jitsi-meet.name" . }}-prosody
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "jitsi-meet.name" . }}-prosody
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+    {{- if .Values.imagePullSecrets }}
+      imagePullSecrets:
+      {{- range .Values.imagePullSecrets }}
+        - {{ toYaml . }}
+      {{- end }}
+    {{- end }}
+      containers:
+
+        # prosody
+        - name: {{ include "jitsi-meet.name" . }}-prosody
+          {{- if .Values.prosody.image }}
+          image: {{ .Values.prosody.image }}
+          {{- else }}
+          image: {{ .Values.imageRepo | default "jitsi" }}/prosody:{{ .Values.imageTag | default "latest"}}
+          {{- end }}
+          imagePullPolicy: {{ .Values.imagePullPolicy | default "Always" }}
+          env:
+            - name: "TZ"
+              value: {{ .Values.timeZone  | default "UTC" | quote }}
+            - name: "ENABLE_XMPP_WEBSOCKET"
+              value: {{ (.Values.websockets | default true) | ternary 1 0 | quote }}
+            - name: "PUBLIC_URL"
+              value: {{ .Values.domain.proto | default "https" }}://{{ .Values.domain.host }}{{- if .Values.domain.port }}:{{ .Values.domain.port }}{{- end }}
+            {{- if .Values.publicIP }}
+            - name: "DOCKER_HOST_ADDRESS"
+              value: {{ .Values.publicIP | quote }}
+            {{- end }}
+            {{- range $k, $v :=  .Values.common.environment }}
+            - name: {{ $k | quote }}
+              value: {{ $v | quote }}
+            {{- end }}
+            {{- range $k, $v := .Values.prosody.environment }}
+            - name: {{ $k | quote }}
+              value: {{ $v | quote }}
+            {{- end }}
+
+          ports:
+            - containerPort: 5222
+              protocol: TCP
+              name: c2s1
+            - containerPort: 5269
+              protocol: TCP
+              name: c2s2
+            - containerPort: 5280
+              protocol: TCP
+              name: web
+            - containerPort: 5347
+              protocol: TCP
+              name: xmpp
+
+        # jicofo
+        - name: {{ include "jitsi-meet.name" . }}-jicofo
+          {{- if .Values.jicofo.image }}
+          image: {{ .Values.jicofo.image }}
+          {{- else }}
+          image: {{ .Values.imageRepo | default "jitsi" }}/jicofo:{{ .Values.imageTag | default "latest"}}
+          {{- end }}
+          imagePullPolicy: {{ .Values.imagePullPolicy | default "Always" }}
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          env:
+            - name: "TZ"
+              value: {{ .Values.timeZone  | default "UTC" | quote }}
+            - name: "ENABLE_XMPP_WEBSOCKET"
+              value: {{ .Values.websockets | ternary "1" "0" | quote }}
+            - name: "PUBLIC_URL"
+              value: {{ .Values.domain.proto | default "https" }}://{{ .Values.domain.host }}{{- if .Values.domain.port }}:{{ .Values.domain.port }}{{- end }}
+            - name: "XMPP_SERVER"
+              value: "localhost"  # xmpp server is another container inside the same pod
+            {{- if .Values.publicIP }}
+            - name: "DOCKER_HOST_ADDRESS"
+              value: {{ .Values.publicIP | quote }}
+            {{- end }}
+            {{- range $k, $v :=  .Values.common.environment }}
+            - name: {{ $k | quote }}
+              value: {{ $v | quote }}
+            {{- end }}
+            {{- range $k, $v := .Values.jicofo.environment }}
+            - name: {{ $k | quote }}
+              value: {{ $v | quote }}
+            {{- end }}
+

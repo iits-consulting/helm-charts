@@ -1,0 +1,26 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: {{ .Chart.Name }}-frontend
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - kind: Rule
+      match: "HostRegexp(`{host:virtual-office.+}`) && (PathPrefix(`/`) || PathPrefix(`/play`))"
+      priority: 100
+      middlewares:
+        - name: strip-prefix-{{ .Release.Name }}
+          namespace: {{ .Release.Namespace }}
+        - name: redirect-{{ .Release.Name }}
+          namespace: {{ .Release.Namespace }}
+      services:
+        - kind: Service
+          name: {{ .Chart.Name }}-frontend
+          namespace: {{ .Release.Namespace }}
+          passHostHeader: true
+          port: 80
+  tls:
+    secretName: {{.Release.Name}}-cert
+    domains:
+      - main: {{.Values.domain}}

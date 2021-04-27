@@ -1,0 +1,16 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRouteTCP
+metadata:
+  name: {{ .Release.Name }}-route
+spec:
+  entryPoints:
+    - jitsi-jvb
+  routes:
+    - match: HostSNI(`*`)
+      services:
+        - kind: Service
+          weight: 1000
+          name: {{ include "jitsi-meet.name" . }}-jvb
+          terminationDelay: 3600
+          namespace: {{ .Release.Namespace }}
+          port: {{ .Values.jvb.port |default "4443" }}

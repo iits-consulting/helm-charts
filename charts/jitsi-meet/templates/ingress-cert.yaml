@@ -1,0 +1,17 @@
+{{- if .Values.ingress }}
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name:  {{ include "jitsi-meet.name" . }}-cert
+spec:
+  secretName: {{ include "jitsi-meet.name" . }}-cert
+  issuerRef:
+    name: letsencrypt
+    kind: ClusterIssuer
+  commonName: {{ .Values.certificate.host }}
+  privateKey:
+    algorithm: "RSA"
+    size: 4096
+  dnsNames:
+    - {{ .Values.certificate.host }}
+{{ end }}

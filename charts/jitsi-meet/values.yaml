@@ -1,0 +1,57 @@
+---
+certificate:
+  host: localhost # MUST BE SET!
+domain:
+  host: localhost # MUST BE SET!
+  # proto: http  # default
+  # port: 8080     # default
+  cert: dev-jitsi-cert
+
+publicIP: "1.2.3.4"  #<- must be set it for video conference!
+
+# imageRepo: "jitsi" # Docker Hub repo. For private repo change it to "https://your.private.repo/project"
+# imageTag: "latest" # default
+imageTag: "stable-5390-3"
+
+# imagePullPolicy: "Always" # default
+imagePullPolicy: "IfNotPresent"
+
+# imagePullSecrets: [] # default
+
+# timeZone: UTC    # default
+# websockets: false # default
+# ingress: false    # default. Take care of .Values.domain.cert
+
+ingress: true
+websockets: true
+
+# These environment variables will be set for each pod
+common:
+  environment:
+    XMPP_DOMAIN: jitsi.meet
+    XMPP_AUTH_DOMAIN: auth.jitsi.meet
+    XMPP_INTERNAL_MUC_DOMAIN: internal-muc.jitsi.meet
+    XMPP_MUC_DOMAIN: muc.jitsi.meet
+    XMPP_GUEST_DOMAIN: guest.jitsi.meet
+    JVB_BREWERY_MUC: jvbbrewery
+    ENABLE_GUESTS: "1"
+    ENABLE_AUTH: "0"
+    AUTH_TYPE: "internal"
+    ENABLE_IPV6: 0
+    JVB_AUTH_USER: jvb
+    JICOFO_AUTH_USER: focus
+    JICOFO_COMPONENT_SECRET: "please-generate-a-new-secret"
+    JICOFO_AUTH_PASSWORD: "please-generate-a-new-secret"
+    JVB_AUTH_PASSWORD: "please-generate-a-new-secret"
+
+web:
+  environment: {}
+
+prosody:
+  environment: {}
+
+jicofo:
+  environment: {}
+
+jvb:
+  environment: {}
