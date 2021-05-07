@@ -1,0 +1,33 @@
+apiVersion: v1
+entries:
+  imagepullsecret-patcher:
+  - apiVersion: v2
+    created: "2021-05-07T13:20:10.990761792Z"
+    description: imagepullsecret-patcher
+    digest: 87eed70b964441eec947168be69b0da07d74ef7ed569ff86983c0170ce059613
+    name: imagepullsecret-patcher
+    urls:
+    - https://iits-consulting.github.io/helm-charts/imagepullsecret-patcher-0.1.1.tgz
+    version: 0.1.1
+  jitsi-meet:
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2021-05-07T13:20:10.991284212Z"
+    description: A Helm chart jitsi-meet for Kubernetes
+    digest: 546df851d9829d94e63f266763ae444610097c1d113815bef00af41da50ba86a
+    name: jitsi-meet
+    urls:
+    - https://iits-consulting.github.io/helm-charts/jitsi-meet-0.1.1.tgz
+    version: 0.1.1
+  workadventure:
+  - apiVersion: v2
+    appVersion: v1.1.0
+    created: "2021-05-07T13:20:10.99203714Z"
+    description: A Helm chart for Kubernetes
+    digest: c5bb5e050dc41f7620e2d1a16bdbe6a8e299cd227b2228aaf296997aba1e4b73
+    name: workadventure
+    type: application
+    urls:
+    - https://iits-consulting.github.io/helm-charts/workadventure-0.1.1.tgz
+    version: 0.1.1
+generated: "2021-05-07T13:20:10.990143468Z"
