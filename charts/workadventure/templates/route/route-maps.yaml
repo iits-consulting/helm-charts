@@ -1,0 +1,24 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: {{ .Chart.Name }}-maps
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - kind: Rule
+      match: "HostRegexp(`{host:virtual-office.+}`) && PathPrefix(`/maps`)"
+      priority: 1000
+      middlewares:
+        - name: strip-prefix-{{ .Release.Name }}
+          namespace: {{ .Release.Namespace }}
+      services:
+        - kind: Service
+          name: {{ .Chart.Name }}-maps
+          namespace: {{ .Release.Namespace }}
+          port: 80
+          passHostHeader: true
+  tls:
+    secretName: {{.Release.Name}}-cert
+    domains:
+      - main: {{.Values.domain}}
