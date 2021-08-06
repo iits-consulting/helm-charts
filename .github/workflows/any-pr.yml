@@ -1,8 +1,9 @@
 name: Roll out unstable chart version
 
 on:
-  pull_request:
-    types: [labeled, unlabeled, opened, edited, synchronize]
+  push
+#  pull_request:
+#    types: [labeled, unlabeled, opened, edited, synchronize]
 jobs:
   lint:
     name: Lint
