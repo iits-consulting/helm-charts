@@ -13,32 +13,60 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: helm-check
-        uses: igabaydulin/helm-check-action@0.1.4
-        env:
-          CHART_LOCATION: .
-
-  update-repo:
-    needs: lint
-    name: Update-repo
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-
-      - name: Configure Git
+      - name: TEMP Get valid SHA
         run: |
-          git config user.name "$GITHUB_ACTOR"
-          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+          echo ${{github.sha}}
+          echo ${{ github.event.pull_request.base.sha }}
 
-      - name: Install Helm
-        uses: azure/setup-helm@v1
-        with:
-          version: v3.4.0
-
-      - name: Run chart-releaser
-        uses: helm/chart-releaser-action@v1.2.1
+      - name: Get pull requests
+        id: pr-labels
+        uses: iits-consulting/action-get-project-metadata@main
         env:
-          CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          API_TOKEN_GITHUB: ${{ secrets.DLAVRUSHKO_PERSONAL_ACCESS_TOKEN }}
+        with:
+          destination_repo: 'iits-consulting/helm-charts'
+          type: pull-requests
+
+
+
+      - name: Read labels
+        run: |
+          CHART_NAME=$(echo ${{ steps.pr-labels.outputs }}\
+          | jq -r -c 'map(select(.head.sha | contains("${{ github.event.pull_request.base.sha }}")) \
+          | .labels[] | select(.name | contains("chartName")) | .name)')
+          echo $CHART_NAME
+          if [[ -z $CHART_NAME ]]; then
+            echo "ERROR: Actual PR does not have chartName label"
+            exit 1
+          fi
+
+#2
+#      - name: helm-check
+#        uses: igabaydulin/helm-check-action@0.1.4
+#        env:
+#          CHART_LOCATION: .
+
+#  update-repo:
+#    needs: lint
+#    name: Update-repo
+#    runs-on: ubuntu-latest
+#    steps:
+#      - name: Checkout
+#        uses: actions/checkout@v2
+#        with:
+#          fetch-depth: 0
+#
+#      - name: Configure Git
+#        run: |
+#          git config user.name "$GITHUB_ACTOR"
+#          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+#
+#      - name: Install Helm
+#        uses: azure/setup-helm@v1
+#        with:
+#          version: v3.4.0
+#
+#      - name: Run chart-releaser
+#        uses: helm/chart-releaser-action@v1.2.1
+#        env:
+#          CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
