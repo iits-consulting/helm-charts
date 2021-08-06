@@ -1,0 +1,180 @@
+name: Lint and make PR's
+
+on:
+  push:
+    paths-ignore:
+#      - ".github/**"
+      - "*.md"
+      - "LICENSE"
+    branches-ignore:
+      - main
+
+jobs:
+  lint-test:
+    name: Lint and bump new version
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - id: identify
+        run: |
+          export GIT_PR_SHA="${{ github.sha }}"
+          export GIT_PR_SHA_SHORT="${GIT_PR_SHA:0:10}"
+
+          echo "::set-output name=git_pr_sha::${GIT_PR_SHA}"
+          echo "::set-output name=git_pr_sha_short::${GIT_PR_SHA_SHORT}"
+          echo "GIT_SHA_SHORT=`echo ${GIT_PR_SHA_SHORT}`" >> $GITHUB_ENV
+#      - name: Add SHORT_SHA env property with commit short sha
+#        run: echo "GITHUB_SHA_SHORT=`echo ${GITHUB_SHA} | cut -c1-8`" >> $GITHUB_ENV
+
+#      - name: helm-check
+#        uses: igabaydulin/helm-check-action@0.1.4
+#        env:
+#          CHART_LOCATION: .
+
+      - name: Get new tag
+        id: newTagStep
+        run: |
+          ct=$(cat Chart.yaml | tr -d " " | grep -oP '(?<=version:)\d+\.\d+\.\d+')
+          if [[ -z $ct ]]
+          then
+            echo "ERROR: Check your chart version in Chart.yaml file!!!"
+            echo "It should have SemVer numbers and be processed by '(?<=version:)\d+\.\d+\.\d+' regexp"
+            exit 1
+          fi
+          echo "NEW_TAG=$(echo "$ct+${{ env.GIT_SHA_SHORT }}")" >> $GITHUB_ENV
+
+      - name: check version
+        run: |
+          echo ${{ env.NEW_TAG }}
+          echo ${{ env.GIT_SHA_SHORT }}
+
+      - name: Find and replace version in Chart.yaml
+        uses: jacobtomlinson/gha-find-replace@master
+        with:
+          find: "version:.*"
+          replace: "version: ${{ env.NEW_TAG }}"
+          include: Chart.yaml
+
+      - name: Commit and push changes
+        uses: EndBug/add-and-commit@v7
+        with:
+          add: Chart.yaml
+          message: "[Auto-update] version updated"
+          tag: "${{ env.NEW_TAG }}"
+
+      - name: Bump version and push tag
+        uses: ChloePlanet/github-tag-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CUSTOM_TAG: ${{ env.NEW_TAG }}
+
+      - name: get sha
+        id: sha
+        run: |
+          sha_new=$(git rev-parse HEAD)
+          echo $sha_new
+          echo "::set-output name=sha::$sha_new"
+      - run:
+          echo ${{ steps.sha.outputs.SHA }}
+
+    outputs:
+      git_pr_sha: ${{ steps.identify.outputs.git_pr_sha }}
+      git_pr_sha_short: ${{ steps.identify.outputs.git_pr_sha_short }}
+      new_sha: ${{ steps.sha.outputs.sha }}
+
+  make-local-pr:
+    needs: [lint-test]
+    name: Make/Update local PR
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Inject slug/short variables
+        uses: rlespinasse/github-slug-action@v3.x
+
+      - name: Make/Update local PR
+        uses: repo-sync/pull-request@v2
+        with:
+          destination_branch: "main"
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          pr_title: "Pulling ${{ env.GITHUB_EVENT_REF_SLUG }} into main"
+          pr_template: ".github/pull_request_template.md"
+          pr_reviewer: "wei,worker"
+          pr_label: "auto-pr"
+
+  make-external-pr:
+    needs: [lint-test]
+    name: Make/Update external PR
+    runs-on: ubuntu-latest
+    steps:
+      - name: TEMP test ref
+        run: echo ${{ needs.lint-test.outputs.new_sha }}
+
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ needs.lint-test.outputs.new_sha }}
+          fetch-depth: 0
+
+      - name: Setting branch name variable
+        run: echo "BRANCH_NAME=$(echo "${GITHUB_REF##*/}")" >> $GITHUB_ENV
+
+      - name: TEMP check chart version
+        run: |
+          echo ${{ env.BRANCH_NAME }}
+          cat Chart.yaml
+
+      - name: pull-request-repo
+        uses: paygoc6/action-pull-request-another-repo@v1.0.1
+        env:
+          API_TOKEN_GITHUB: ${{ secrets.DLAVRUSHKO_PERSONAL_ACCESS_TOKEN }}
+        with:
+          source_folder: .
+          destination_repo: 'iits-consulting/helm-charts'
+          destination_folder: 'charts'
+          destination_base_branch: master
+          destination_head_branch: ${{ env.BRANCH_NAME }}
+######################
+######################
+######################
+          user_email: 'denis.lavrushko@iits-consulting.de'
+          user_name: 'dlavrushk0'
+          pull_request_reviewers: 'dlavrushk0'
+####################
+####################
+####################
+
+
+############ leave this for main chart repo #############
+#      - uses: actions/setup-python@v2
+#        with:
+#          python-version: 3.7
+#
+#      - name: Set up chart-txesting
+#        uses: helm/chart-testing-action@v2.0.1
+#
+#      - name: Run chart-testing (list-changed)
+#        id: list-changed
+#        run: |
+#          changed=$(ct list-changed)
+#          if [[ -n "$changed" ]]; then
+#            echo "::set-output name=changed::true"
+#          fi
+#
+#
+#      - name: Run chart-testing (lint)
+#        run: ct lint
+#
+#      - name: Create kind cluster
+#        uses: helm/kind-action@v1.0.0
+#        if: steps.list-changed.outputs.changed == 'true'
+#
+#      - name: Run chart-testing (install)
+#        run: ct install
