@@ -20,7 +20,7 @@ jobs:
         with:
           destination_repo: 'user-name/repository-name'
           type: labels
-
+#1
 #      - name: helm-check
 #        uses: igabaydulin/helm-check-action@0.1.4
 #        env:
