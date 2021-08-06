@@ -13,32 +13,40 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: helm-check
-        uses: igabaydulin/helm-check-action@0.1.4
+      - name: Get labels
+        uses: iits-consulting/action-get-project-metadata@main
         env:
-          CHART_LOCATION: .
-
-  update-repo:
-    needs: lint
-    name: Update-repo
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
+          API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
         with:
-          fetch-depth: 0
+          destination_repo: 'user-name/repository-name'
+          type: labels
 
-      - name: Configure Git
-        run: |
-          git config user.name "$GITHUB_ACTOR"
-          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+#      - name: helm-check
+#        uses: igabaydulin/helm-check-action@0.1.4
+#        env:
+#          CHART_LOCATION: .
 
-      - name: Install Helm
-        uses: azure/setup-helm@v1
-        with:
-          version: v3.4.0
-
-      - name: Run chart-releaser
-        uses: helm/chart-releaser-action@v1.2.1
-        env:
-          CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+#  update-repo:
+#    needs: lint
+#    name: Update-repo
+#    runs-on: ubuntu-latest
+#    steps:
+#      - name: Checkout
+#        uses: actions/checkout@v2
+#        with:
+#          fetch-depth: 0
+#
+#      - name: Configure Git
+#        run: |
+#          git config user.name "$GITHUB_ACTOR"
+#          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+#
+#      - name: Install Helm
+#        uses: azure/setup-helm@v1
+#        with:
+#          version: v3.4.0
+#
+#      - name: Run chart-releaser
+#        uses: helm/chart-releaser-action@v1.2.1
+#        env:
+#          CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
