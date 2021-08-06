@@ -27,18 +27,19 @@ jobs:
           destination_repo: 'iits-consulting/helm-charts'
           type: pull-requests
 
+      - name: Get output
+        run: echo ${{ steps.pr-labels.outputs.pull-requests }}
 
-
-      - name: Read labels
-        run: |
-          CHART_NAME=$(echo ${{ steps.pr-labels.outputs }} | jq -r -c 'map(select(.merge_commit_sha | contains("${{github.sha}}")) | .labels[] | select(.name | contains("chartName")) | .name)')
-          echo $CHART_NAME
-          if [[ -z $CHART_NAME ]]; then
-            echo "ERROR: Actual PR does not have chartName label"
-            exit 1
-          else
-            echo "everything ok"
-          fi
+#      - name: Read labels
+#        run: |
+#          CHART_NAME=$(echo ${{ steps.pr-labels.outputs.pull-requests }} | jq -r -c 'map(select(.merge_commit_sha | contains("${{github.sha}}")) | .labels[] | select(.name | contains("chartName")) | .name)')
+#          echo $CHART_NAME
+#          if [[ -z $CHART_NAME ]]; then
+#            echo "ERROR: Actual PR does not have chartName label"
+#            exit 1
+#          else
+#            echo "everything ok"
+#          fi
 
 #2
 #      - name: helm-check
