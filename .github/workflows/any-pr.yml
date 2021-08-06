@@ -36,6 +36,8 @@ jobs:
           if [[ -z $CHART_NAME ]]; then
             echo "ERROR: Actual PR does not have chartName label"
             exit 1
+          else
+            echo "everything ok"
           fi
 
 #2
