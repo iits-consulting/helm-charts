@@ -31,9 +31,7 @@ jobs:
 
       - name: Read labels
         run: |
-          CHART_NAME=$(echo ${{ steps.pr-labels.outputs }}\
-          | jq -r -c 'map(select(.head.sha | contains("${{ github.event.pull_request.base.sha }}")) \
-          | .labels[] | select(.name | contains("chartName")) | .name)')
+          CHART_NAME=$(echo ${{ steps.pr-labels.outputs }} | jq -r -c 'map(select(.merge_commit_sha | contains("${{github.sha}}")) | .labels[] | select(.name | contains("chartName")) | .name)')
           echo $CHART_NAME
           if [[ -z $CHART_NAME ]]; then
             echo "ERROR: Actual PR does not have chartName label"
