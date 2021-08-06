@@ -1,0 +1,15 @@
+name: PR to the main chart repo
+
+on:
+  release:
+    types:
+      - published
+
+jobs:
+  trigger-chart-repo:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
