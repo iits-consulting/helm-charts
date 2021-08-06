@@ -1,0 +1,17 @@
+name: Enforce PR labels (major, minor or patch)
+
+on:
+  pull_request:
+    types: [labeled, unlabeled, opened, edited, synchronize]
+jobs:
+  enforce-label:
+    name: Labels check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Looking for any (major, minor or patch) label
+        uses: yogevbd/enforce-label-action@2.1.0
+        with:
+          REQUIRED_LABELS_ANY: "major,minor,patch"
+          REQUIRED_LABELS_ANY_DESCRIPTION: "Select at least one label ['major','minor','patch']"
+
+
