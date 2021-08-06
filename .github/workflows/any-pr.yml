@@ -16,7 +16,7 @@ jobs:
       - name: Get labels
         uses: iits-consulting/action-get-project-metadata@main
         env:
-          API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
+          API_TOKEN_GITHUB: ${{ secrets.DLAVRUSHKO_PERSONAL_ACCESS_TOKEN }}
         with:
           destination_repo: 'user-name/repository-name'
           type: labels
