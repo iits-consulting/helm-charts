@@ -24,7 +24,7 @@ jobs:
 
       - name: Read labels
         run: echo ${{ steps.labels.outputs }}
-#1
+#2
 #      - name: helm-check
 #        uses: igabaydulin/helm-check-action@0.1.4
 #        env:
