@@ -14,12 +14,16 @@ jobs:
           fetch-depth: 0
 
       - name: Get labels
+        id: labels
         uses: iits-consulting/action-get-project-metadata@main
         env:
           API_TOKEN_GITHUB: ${{ secrets.DLAVRUSHKO_PERSONAL_ACCESS_TOKEN }}
         with:
           destination_repo: 'user-name/repository-name'
           type: labels
+
+      - name: Read labels
+        run: echo ${{ steps.labels.outputs }}
 #1
 #      - name: helm-check
 #        uses: igabaydulin/helm-check-action@0.1.4
