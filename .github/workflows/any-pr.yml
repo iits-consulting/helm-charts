@@ -19,7 +19,7 @@ jobs:
         env:
           API_TOKEN_GITHUB: ${{ secrets.DLAVRUSHKO_PERSONAL_ACCESS_TOKEN }}
         with:
-          destination_repo: 'user-name/repository-name'
+          destination_repo: 'iits-consulting/helm-charts'
           type: labels
 
       - name: Read labels
