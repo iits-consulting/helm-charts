@@ -1,9 +1,8 @@
 name: Roll out unstable chart version
 
 on:
-  push
-#  pull_request:
-#    types: [labeled, unlabeled, opened, edited, synchronize]
+  pull_request:
+    types: [labeled, unlabeled, opened, edited, synchronize]
 jobs:
   lint:
     name: Lint
@@ -19,26 +18,27 @@ jobs:
           echo ${{github.sha}}
           echo ${{ github.event.pull_request.base.sha }}
 
-#      - name: Get pull requests
-#        id: pr-labels
-#        uses: iits-consulting/action-get-project-metadata@main
-#        env:
-#          API_TOKEN_GITHUB: ${{ secrets.DLAVRUSHKO_PERSONAL_ACCESS_TOKEN }}
-#        with:
-#          destination_repo: 'iits-consulting/helm-charts'
-#          type: pull-requests
+      - name: Get pull requests
+        id: pr-labels
+        uses: iits-consulting/action-get-project-metadata@main
+        env:
+          API_TOKEN_GITHUB: ${{ secrets.DLAVRUSHKO_PERSONAL_ACCESS_TOKEN }}
+        with:
+          destination_repo: 'iits-consulting/helm-charts'
+          type: pull-requests
 
 
 
-#      - name: Read labels
-#        run: |
-#          CHART_NAME=$(echo ${{ steps.pr-labels.outputs }}\
-#          | jq -r -c 'map(select(.head.sha | contains("6d3d413c60dce9da8488ca8458dabb81a96f2e8c")) \
-#          | .labels[] | select(.name | contains("chartName")) | .name)')
-#          if [[ -z $CHART_NAME ]]; then
-#            echo "ERROR: Actual PR does not have chartName label"
-#            exit 1
-#          fi
+      - name: Read labels
+        run: |
+          CHART_NAME=$(echo ${{ steps.pr-labels.outputs }}\
+          | jq -r -c 'map(select(.head.sha | contains("${{ github.event.pull_request.base.sha }}")) \
+          | .labels[] | select(.name | contains("chartName")) | .name)')
+          echo $CHART_NAME
+          if [[ -z $CHART_NAME ]]; then
+            echo "ERROR: Actual PR does not have chartName label"
+            exit 1
+          fi
 
 #2
 #      - name: helm-check
